@@ -43,10 +43,30 @@ def create_app(config_env=None):
     def cors_test():
         return {'message': 'CORS is working!'}
     
-    # Add a simple test route first
+    # Serve frontend static files if they exist
     @app.route('/')
-    def hello():
-        return "Meal Mind Backend is running!"
+    def index():
+        static_dir = os.path.join(app.root_path, 'static')
+        if os.path.exists(os.path.join(static_dir, 'index.html')):
+            from flask import send_from_directory
+            return send_from_directory(static_dir, 'index.html')
+        else:
+            return "Meal Mind Backend is running!"
+    
+    # Serve static files (JS, CSS, images)
+    @app.route('/<path:filename>')
+    def static_files(filename):
+        static_dir = os.path.join(app.root_path, 'static')
+        if os.path.exists(os.path.join(static_dir, filename)):
+            from flask import send_from_directory
+            return send_from_directory(static_dir, filename)
+        else:
+            # If not a static file and frontend exists, serve index.html (SPA routing)
+            if os.path.exists(os.path.join(static_dir, 'index.html')):
+                from flask import send_from_directory
+                return send_from_directory(static_dir, 'index.html')
+            else:
+                return {"error": "Resource not found"}, 404
     
     @app.route('/api/test', methods=['GET'])
     def test_route():
