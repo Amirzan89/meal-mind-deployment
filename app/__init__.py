@@ -31,9 +31,21 @@ def create_app(config_env=None):
     migrate.init_app(app, db)
     jwt.init_app(app)
     
-    # Configure CORS
+    # Configure CORS - Allow all Vercel domains and localhost
+    allowed_origins = [
+        "http://localhost:5173", 
+        "http://127.0.0.1:5173",
+        "https://meal-mind-fe.vercel.app",  # Your main Vercel domain
+        "https://meal-mind-1tvlc97dz-amfiktests-projects.vercel.app"  # Current deployment
+    ]
+    
+    # Add environment variable for additional origins
+    extra_origins = os.environ.get('ALLOWED_ORIGINS', '').split(',')
+    if extra_origins and extra_origins[0]:  # Only add if not empty
+        allowed_origins.extend([origin.strip() for origin in extra_origins])
+    
     CORS(app, 
-         resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}},
+         resources={r"/*": {"origins": allowed_origins}},
          supports_credentials=True,
          allow_headers=["Content-Type", "Authorization"],
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
