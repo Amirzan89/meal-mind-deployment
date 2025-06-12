@@ -1,0 +1,38 @@
+# Virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*
+
+# Database files (we'll let them be copied if needed)
+# *.db
+
+# Test files
+test_*.py
+
+# Documentation
+README.md
+*.md 
