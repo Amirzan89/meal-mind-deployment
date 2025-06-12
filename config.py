@@ -28,27 +28,48 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     """Production configuration."""
-    # Use PostgreSQL for production
+    # Try PostgreSQL first, fallback to SQLite with volume mount
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'postgresql://postgres:password@localhost:5432/mealmind'
+        os.environ.get('DEV_DATABASE_URL') or \
+        'sqlite:///instance/mealmind_dev.db'
     
-    # Production database optimizations
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_size': 10,
-        'max_overflow': 20,
-        'pool_recycle': 3600,  # recycle connections after 1 hour
-        'pool_pre_ping': True  # verify connections before use
-    }
+    # Production database optimizations (only for PostgreSQL)
+    if os.environ.get('DATABASE_URL'):
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            'pool_size': 10,
+            'max_overflow': 20,
+            'pool_recycle': 3600,  # recycle connections after 1 hour
+            'pool_pre_ping': True  # verify connections before use
+        }
     
     # Security settings
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
+
+class RailwayConfig(Config):
+    """Railway deployment configuration."""
+    # Railway provides DATABASE_URL for PostgreSQL addon, otherwise use SQLite fallback
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:////tmp/mealmind.db'
+    
+    # Use PostgreSQL optimizations only if DATABASE_URL is PostgreSQL
+    if os.environ.get('DATABASE_URL') and 'postgresql' in os.environ.get('DATABASE_URL', ''):
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            'pool_size': 5,
+            'max_overflow': 10,
+            'pool_recycle': 3600,
+            'pool_pre_ping': True
+        }
+    
+    # Railway-specific settings
+    DEBUG = False
+    TESTING = False
 
 # Configuration dictionary to easily select environment
 config_dict = {
     'development': DevelopmentConfig,
     'testing': TestingConfig, 
     'production': ProductionConfig,
+    'railway': RailwayConfig,
     'default': DevelopmentConfig
 }
 

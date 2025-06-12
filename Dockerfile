@@ -7,6 +7,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first to leverage Docker cache
@@ -18,8 +19,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the application code
 COPY . .
 
-# Create directory for SQLite database
-RUN mkdir -p /app/instance
+# Create directories for SQLite database and logs
+RUN mkdir -p /app/instance /app/logs /tmp
 
 # Set environment variables
 ENV FLASK_APP=run.py
@@ -30,8 +31,8 @@ ENV PYTHONPATH=/app
 EXPOSE 5000
 
 # Create a non-root user for security
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app /tmp
 USER appuser
 
-# Command to run the application
-CMD ["python", "run.py"] 
+# Use Railway startup script
+CMD ["python", "railway_start.py"] 
