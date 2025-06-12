@@ -28,13 +28,11 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     """Production configuration."""
-    # Try PostgreSQL first, fallback to SQLite with volume mount
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        os.environ.get('DEV_DATABASE_URL') or \
-        'sqlite:///instance/mealmind_dev.db'
+    # Use Railway DATABASE_URL if available, otherwise use temp SQLite (Railway-friendly)
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:////tmp/mealmind.db'
     
     # Production database optimizations (only for PostgreSQL)
-    if os.environ.get('DATABASE_URL'):
+    if os.environ.get('DATABASE_URL') and 'postgresql' in os.environ.get('DATABASE_URL', ''):
         SQLALCHEMY_ENGINE_OPTIONS = {
             'pool_size': 10,
             'max_overflow': 20,

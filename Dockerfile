@@ -30,8 +30,10 @@ ENV PYTHONPATH=/app
 # Expose port
 EXPOSE 5000
 
-# Create a non-root user for security
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app /tmp
+# Create a non-root user for security and ensure /tmp is writable
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app && \
+    chmod 777 /tmp
 USER appuser
 
 # Use Railway startup script

@@ -15,7 +15,15 @@ logger = logging.getLogger(__name__)
 def initialize_database(app):
     """Initialize database tables"""
     try:
+        # Ensure database directories exist
+        os.makedirs('/tmp', exist_ok=True)
+        os.makedirs('/app/instance', exist_ok=True)
+        logger.info("Database directories created")
+        
         with app.app_context():
+            # Log the actual database URL being used
+            logger.info(f"Using database: {app.config['SQLALCHEMY_DATABASE_URI']}")
+            
             # Create all tables
             db.create_all()
             logger.info("Database tables created successfully")
@@ -33,9 +41,17 @@ def initialize_database(app):
 
 def main():
     """Main startup function"""
-    # Determine environment
-    env = os.environ.get('FLASK_ENV', 'railway')
+    # Determine environment - Railway often sets FLASK_ENV=production
+    env = os.environ.get('FLASK_ENV', 'production')
     logger.info(f"Starting application in {env} environment")
+    
+    # Log database configuration for debugging
+    db_url = os.environ.get('DATABASE_URL', 'Not set')
+    railway_env = os.environ.get('RAILWAY_ENVIRONMENT', 'Not set')  
+    port_env = os.environ.get('PORT', 'Not set')
+    logger.info(f"DATABASE_URL: {db_url}")
+    logger.info(f"RAILWAY_ENVIRONMENT: {railway_env}")
+    logger.info(f"PORT: {port_env}")
     
     # Create Flask app
     app = create_app(env)
