@@ -12,6 +12,45 @@ from app import create_app, db
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def seed_basic_data():
+    """Seed the database with initial data"""
+    from app.models.user import User, UserProfile
+    from werkzeug.security import generate_password_hash
+    
+    # Create admin user if not exists
+    if not User.query.filter_by(email="admin@mealmind.com").first():
+        admin = User(
+            email="admin@mealmind.com",
+            username="admin",
+            password_hash=generate_password_hash("adminpass")
+        )
+        db.session.add(admin)
+        
+    # Create test user if not exists
+    if not User.query.filter_by(email="test@mealmind.com").first():
+        test_user = User(
+            email="test@mealmind.com",
+            username="testuser",
+            password_hash=generate_password_hash("testpass")
+        )
+        db.session.add(test_user)
+        
+        # Add profile for test user
+        profile = UserProfile(
+            user=test_user,
+            weight=70.0,
+            height=175.0,
+            age=30,
+            gender="male",
+            activity_level="moderate",
+            goal_weight=68.0,
+            dietary_restrictions="[]"
+        )
+        db.session.add(profile)
+    
+    db.session.commit()
+    logger.info("Database seeded with initial data!")
+
 def initialize_database(app):
     """Initialize database tables"""
     try:
@@ -32,8 +71,7 @@ def initialize_database(app):
             from app.models.user import User
             if not User.query.first():
                 logger.info("Database is empty, seeding basic data...")
-                from app.cli import seed_db
-                seed_db()
+                seed_basic_data()
                 
     except Exception as e:
         logger.error(f"Database initialization failed: {e}")
